@@ -2,6 +2,9 @@ const svg = document.getElementById("holds-layer");
 const selector = document.getElementById("hold-selector");
 const selectorList = document.getElementById("selector-list");
 const selectorClose = document.getElementById("selector-close");
+const GITHUB_USER = "Eyoxee";
+const GITHUB_REPO = "Spraywall-Arkose-Bordeaux";
+const GITHUB_TOKEN = "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";
 
 let holds = [
   {
@@ -1160,6 +1163,47 @@ stateSelectorClose.onclick = () => {
     stateSelector.classList.add("hidden");
 };
 
+async function fetchBlocs() {
+    const url = `https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/blocs.json`;
+
+    const res = await fetch(url, {
+        headers: {
+            "Accept": "application/vnd.github.v3+json"
+        }
+    });
+
+    const data = await res.json();
+    const content = atob(data.content);
+    return JSON.parse(content);
+}
+
+async function saveBlocsToGitHub(blocs) {
+    const url = `https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/blocs.json`;
+
+    const getRes = await fetch(url, {
+        headers: {
+            "Accept": "application/vnd.github.v3+json"
+        }
+    });
+
+    const fileData = await getRes.json();
+
+    const newContent = btoa(JSON.stringify(blocs, null, 2));
+
+    await fetch(url, {
+        method: "PUT",
+        headers: {
+            "Authorization": `token ${GITHUB_TOKEN}`,
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            message: "Update blocs.json",
+            content: newContent,
+            sha: fileData.sha
+        })
+    });
+}
+
 // ----------------------
 // RENDU DES PRISES
 // ----------------------
@@ -1244,7 +1288,7 @@ function toggleHold(poly) {
 // ----------------------
 // GESTION DES BLOCS
 // ----------------------
-function saveBloc() {
+async function saveBloc() {
     const bloc = {
         name: document.getElementById("bloc-name").value,
         grade: document.getElementById("bloc-grade").value,
@@ -1252,18 +1296,19 @@ function saveBloc() {
         holds: holds.map(h => ({ id: h.id, state: h.state }))
     };
 
-    let saved = JSON.parse(localStorage.getItem("blocs") || "[]");
-    saved.push(bloc);
-    localStorage.setItem("blocs", JSON.stringify(saved));
+    const blocs = await fetchBlocs();
+    blocs.push(bloc);
 
+    await saveBlocsToGitHub(blocs);
     loadBlocs();
 }
 
-function loadBlocs() {
+
+async function loadBlocs() {
     const list = document.getElementById("bloc-list");
     list.innerHTML = "";
 
-    const blocs = JSON.parse(localStorage.getItem("blocs") || "[]");
+    const blocs = await fetchBlocs();
 
     blocs.forEach((b, index) => {
         const li = document.createElement("li");
@@ -1271,7 +1316,10 @@ function loadBlocs() {
         li.onclick = () => loadBloc(index);
         list.appendChild(li);
     });
+
+    window.allBlocs = blocs;
 }
+
 
 function loadBloc(index) {
     const blocs = JSON.parse(localStorage.getItem("blocs") || "[]");
@@ -1293,8 +1341,8 @@ function loadBloc(index) {
     renderHolds();
 }
 
-function updateBloc() {
-    const blocs = JSON.parse(localStorage.getItem("blocs") || "[]");
+async function updateBloc() {
+    const blocs = await fetchBlocs();
 
     blocs[currentBloc] = {
         name: document.getElementById("bloc-name").value,
@@ -1303,16 +1351,19 @@ function updateBloc() {
         holds: holds.map(h => ({ id: h.id, state: h.state }))
     };
 
-    localStorage.setItem("blocs", JSON.stringify(blocs));
+    await saveBlocsToGitHub(blocs);
     loadBlocs();
 }
 
-function deleteBloc() {
-    const blocs = JSON.parse(localStorage.getItem("blocs") || "[]");
+
+async function deleteBloc() {
+    const blocs = await fetchBlocs();
     blocs.splice(currentBloc, 1);
-    localStorage.setItem("blocs", JSON.stringify(blocs));
+
+    await saveBlocsToGitHub(blocs);
     loadBlocs();
 }
+
 
 // ----------------------
 // BOUTONS
@@ -1327,5 +1378,8 @@ document.getElementById("new-bloc").onclick = () => {
 // ----------------------
 // INITIALISATION
 // ----------------------
-loadBlocs();
-renderHolds();
+(async () => {
+    await loadBlocs();
+    renderHolds();
+})();
+
