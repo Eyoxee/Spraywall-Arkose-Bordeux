@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Board Climbing App</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div id="app">
+    <div id="board-container">
+        <img id="board-img" src="board.jpg" alt="Climbing Board">
+        <svg id="holds-layer"></svg>
+    </div>
+
+    <div id="sidebar">
+        <h2>Bloc en cours</h2>
+        <label>Nom : <input id="bloc-name"></label>
+        <label>Cotation : <input id="bloc-grade"></label>
+        <label>Description : <textarea id="bloc-desc"></textarea></label>
+
+        <button id="save-bloc">Enregistrer le bloc</button>
+        <button id="new-bloc">Nouveau bloc</button>
+
+        <button id="update-bloc" style="display:none;">Mettre à jour</button>
+        <button id="delete-bloc" style="display:none;">Supprimer</button>
+
+        <h2>Blocs enregistrés</h2>
+        <ul id="bloc-list"></ul>
+    </div>
+
+    <div id="hold-selector" class="hidden">
+        <h3>Plusieurs prises ici</h3>
+        <ul id="selector-list"></ul>
+        <button id="selector-close">Fermer</button>
+    </div>
+    <div id="state-selector" class="hidden">
+    <h3>Choisir l’état</h3>
+    <p id="state-selector-title"></p>
+    <div id="state-buttons">
+        <button data-state="foot">Pied</button>
+        <button data-state="hand">Main</button>
+        <button data-state="start">Départ</button>
+        <button data-state="finish">Arrivée</button>
+        <button data-state="none">Aucun</button>
+    </div>
+    <button id="state-selector-close">Fermer</button>
+    </div>
+
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
