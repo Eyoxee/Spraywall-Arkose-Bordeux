@@ -1181,16 +1181,18 @@ async function saveBlocsToGitHub(blocs) {
     const url = `https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/blocs.json`;
 
     const getRes = await fetch(url, {
-        headers: {
-            "Accept": "application/vnd.github.v3+json"
-        }
+        headers: { "Accept": "application/vnd.github.v3+json" }
     });
 
-    const fileData = await getRes.json();
+    if (!getRes.ok) {
+        console.error("Erreur GET blocs.json :", await getRes.text());
+        return;
+    }
 
+    const fileData = await getRes.json();
     const newContent = btoa(JSON.stringify(blocs, null, 2));
 
-    await fetch(url, {
+    const putRes = await fetch(url, {
         method: "PUT",
         headers: {
             "Authorization": `token ${GITHUB_TOKEN}`,
@@ -1202,7 +1204,12 @@ async function saveBlocsToGitHub(blocs) {
             sha: fileData.sha
         })
     });
+
+    if (!putRes.ok) {
+        console.error("Erreur PUT blocs.json :", await putRes.text());
+    }
 }
+
 
 // ----------------------
 // RENDU DES PRISES
@@ -1304,25 +1311,8 @@ async function saveBloc() {
 }
 
 
-async function loadBlocs() {
-    const list = document.getElementById("bloc-list");
-    list.innerHTML = "";
-
+async function loadBloc(index) {
     const blocs = await fetchBlocs();
-
-    blocs.forEach((b, index) => {
-        const li = document.createElement("li");
-        li.textContent = `${b.name} (${b.grade})`;
-        li.onclick = () => loadBloc(index);
-        list.appendChild(li);
-    });
-
-    window.allBlocs = blocs;
-}
-
-
-function loadBloc(index) {
-    const blocs = JSON.parse(localStorage.getItem("blocs") || "[]");
     const bloc = blocs[index];
     currentBloc = index;
 
@@ -1340,6 +1330,7 @@ function loadBloc(index) {
 
     renderHolds();
 }
+
 
 async function updateBloc() {
     const blocs = await fetchBlocs();
