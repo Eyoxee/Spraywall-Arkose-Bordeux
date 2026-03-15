@@ -1177,39 +1177,57 @@ async function fetchBlocs() {
     return JSON.parse(content);
 }
 
-async function saveBlocsToGitHub(blocs) {
-    const url = `https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/blocs.json`;
+async function loadBlocs() {
 
-    const getRes = await fetch(url, {
-        headers: { "Accept": "application/vnd.github.v3+json" }
+    const blocList = document.getElementById("bloc-list");
+
+    if (!blocList) return;
+
+    blocList.innerHTML = "";
+
+    const blocs = await fetchBlocs();
+
+    blocs.forEach((bloc, index) => {
+
+        const li = document.createElement("li");
+
+        li.textContent = `${bloc.name} (${bloc.grade})`;
+
+        li.onclick = () => loadBloc(index);
+
+        blocList.appendChild(li);
     });
 
-    if (!getRes.ok) {
-        console.error("Erreur GET blocs.json :", await getRes.text());
-        return;
-    }
+}
+
+async function saveBlocsToGitHub(blocs) {
+
+    const url = `https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/blocs.json`;
+
+    const getRes = await fetch(url);
 
     const fileData = await getRes.json();
-    const newContent = btoa(JSON.stringify(blocs, null, 2));
+
+    const content = btoa(unescape(encodeURIComponent(JSON.stringify(blocs, null, 2))));
 
     const putRes = await fetch(url, {
         method: "PUT",
         headers: {
             "Authorization": `Bearer ${GITHUB_TOKEN}`,
             "Accept": "application/vnd.github+json",
-            "X-GitHub-Api-Version": "2022-11-28",
             "Content-Type": "application/json"
-          },
+        },
         body: JSON.stringify({
             message: "Update blocs.json",
-            content: newContent,
-            sha: fileData.sha
+            content: content,
+            sha: fileData.sha,
+            branch: "main"
         })
     });
 
-    if (!putRes.ok) {
-        console.error("Erreur PUT blocs.json :", await putRes.text());
-    }
+    const result = await putRes.json();
+
+    console.log(result);
 }
 
 
