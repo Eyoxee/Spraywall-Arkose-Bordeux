@@ -6,8 +6,6 @@ import {
   getDoc
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-
-
 const svg = document.getElementById("holds-layer");
 const selector = document.getElementById("hold-selector");
 const selectorList = document.getElementById("selector-list");
@@ -15,7 +13,7 @@ const selectorClose = document.getElementById("selector-close");
 const GITHUB_USER = "Eyoxee";
 const GITHUB_REPO = "Spraywall-Arkose-Bordeaux";
 
-let holds = [
+const holds = [
   {
     "id": "A1",
     "points": "143,8.324996948242188 154,13.324996948242188 160,18.324996948242188 165,25.324996948242188 169,33.32499694824219 171,44.32499694824219 169,56.32499694824219 166,63.32499694824219 160,69.32499694824219 151,72.32499694824219 142,72.32499694824219 131,71.32499694824219 123,66.32499694824219 115,59.32499694824219 109,49.32499694824219 107,37.32499694824219 108,27.324996948242188 112,18.324996948242188 118,12.324996948242188 126,8.324996948242188 135,6.3249969482421875 143,8.324996948242188"
