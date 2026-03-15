@@ -1,15 +1,16 @@
 // ----------------------
 // IMPORTS FIREBASE (doivent être tout en haut)
 // ----------------------
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
 import {
+  getFirestore,
   collection,
   doc,
   setDoc,
   getDocs,
   getDoc,
   deleteDoc
-} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-
+} from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
 const firebaseConfig = {
   apiKey: "AIzaSyBC7GF_dkrwqFTwZXGTUh_7I8HvKsN0j98",
   authDomain: "spraywall-arkose.firebaseapp.com",
