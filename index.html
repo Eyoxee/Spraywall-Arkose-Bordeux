@@ -51,17 +51,23 @@
 
 <script src="app.js"></script>
 <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-  import { getFirestore } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+  // Import the functions you need from the SDKs you need
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
+  // TODO: Add SDKs for Firebase products that you want to use
+  // https://firebase.google.com/docs/web/setup#available-libraries
 
-  window.firebaseConfig = {
-    apiKey: "AIzaSyXXXXXXX",
+  // Your web app's Firebase configuration
+  const firebaseConfig = {
+    apiKey: "AIzaSyBC7GF_dkrwqFTwZXGTUh_7I8HvKsN0j98",
     authDomain: "spraywall-arkose.firebaseapp.com",
-    projectId: "spraywall-arkose"
+    projectId: "spraywall-arkose",
+    storageBucket: "spraywall-arkose.firebasestorage.app",
+    messagingSenderId: "996431157244",
+    appId: "1:996431157244:web:9ee7c328b9fad3dc938479"
   };
 
-  window.firebaseApp = initializeApp(window.firebaseConfig);
-  window.db = getFirestore(window.firebaseApp);
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
 </script>
 
 </body>
