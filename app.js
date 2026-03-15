@@ -1139,7 +1139,6 @@ let holds = [
 ]; // rempli par ton JSON de prises
 let currentBloc = null;
 
-// Couleurs selon l'état
 const COLORS = {
     none: "transparent",
     foot: "blue",
@@ -1150,6 +1149,12 @@ const COLORS = {
 
 const STATE_ORDER = ["none", "foot", "hand", "start", "finish"];
 
+// Ces éléments existent dans ton HTML
+const svg = document.getElementById("holds-layer");
+const selector = document.getElementById("hold-selector");
+const selectorList = document.getElementById("selector-list");
+const selectorClose = document.getElementById("selector-close");
+
 const stateSelector = document.getElementById("state-selector");
 const stateSelectorTitle = document.getElementById("state-selector-title");
 const stateButtons = document.querySelectorAll("#state-buttons button");
@@ -1157,85 +1162,20 @@ const stateSelectorClose = document.getElementById("state-selector-close");
 
 let selectedPoly = null;
 
-stateButtons.forEach(btn => {
-    btn.onclick = () => {
-        if (!selectedPoly) return;
-        const id = selectedPoly.dataset.id;
-        const hold = holds.find(h => h.id === id);
-        hold.state = btn.dataset.state;
-        selectedPoly.setAttribute("stroke", COLORS[hold.state]);
-        stateSelector.classList.add("hidden");
-    };
-});
+// ----------------------
+// IMPORT FIREBASE
+// ----------------------
+import {
+    collection,
+    doc,
+    setDoc,
+    getDocs,
+    getDoc,
+    deleteDoc
+} from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
 
-stateSelectorClose.onclick = () => {
-    stateSelector.classList.add("hidden");
-};
-
-async function fetchBlocs() {
-    const url = `https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/blocs.json`;
-
-    const res = await fetch(url, {
-        headers: {
-            "Accept": "application/vnd.github.v3+json"
-        }
-    });
-
-    const data = await res.json();
-    const content = atob(data.content);
-    return JSON.parse(content);
-}
-
-async function loadBlocs() {
-    const list = document.getElementById("bloc-list");
-    list.innerHTML = "";
-
-    const snap = await getDocs(collection(db, "blocs"));
-    const blocs = [];
-
-    snap.forEach(doc => blocs.push(doc.data()));
-
-    blocs.forEach((b, index) => {
-        const li = document.createElement("li");
-        li.textContent = `${b.name} (${b.grade})`;
-        li.onclick = () => loadBloc(b.name);
-        list.appendChild(li);
-    });
-
-    window.allBlocs = blocs;
-}
-
-
-async function saveBlocsToGitHub(blocs) {
-
-    const url = `https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/blocs.json`;
-
-    const getRes = await fetch(url);
-
-    const fileData = await getRes.json();
-
-    const content = btoa(unescape(encodeURIComponent(JSON.stringify(blocs, null, 2))));
-
-    const putRes = await fetch(url, {
-        method: "PUT",
-        headers: {
-            "Authorization": `Bearer ${GITHUB_TOKEN}`,
-            "Accept": "application/vnd.github+json",
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-            message: "Update blocs.json",
-            content: content,
-            sha: fileData.sha,
-            branch: "main"
-        })
-    });
-
-    const result = await putRes.json();
-
-    console.log(result);
-}
-
+// Firestore est fourni par index.html via window.db
+const db = window.db;
 
 // ----------------------
 // RENDU DES PRISES
@@ -1250,16 +1190,14 @@ function renderHolds() {
         poly.setAttribute("stroke", COLORS[hold.state || "none"]);
         poly.setAttribute("fill", "transparent");
         poly.setAttribute("stroke-width", "3");
-        poly.setAttribute("pointer-events", "all"); // IMPORTANT
+        poly.setAttribute("pointer-events", "all");
         poly.dataset.id = hold.id;
 
-        // Clic sur la prise
         poly.addEventListener("click", handleHoldClick);
 
         svg.appendChild(poly);
     });
 }
-
 
 // ----------------------
 // GESTION DES CLICS SUR LES PRISES
@@ -1294,32 +1232,29 @@ function handleHoldClick(e) {
     selector.classList.remove("hidden");
 }
 
+selectorClose.onclick = () => selector.classList.add("hidden");
+
 function openStateSelector(poly) {
     selectedPoly = poly;
     stateSelectorTitle.textContent = "Prise : " + poly.dataset.id;
     stateSelector.classList.remove("hidden");
 }
 
+stateSelectorClose.onclick = () => stateSelector.classList.add("hidden");
 
-
-
-selectorClose.onclick = () => selector.classList.add("hidden");
-
-// ----------------------
-// CHANGEMENT D'ÉTAT D'UNE PRISE
-// ----------------------
-function toggleHold(poly) {
-    const id = poly.dataset.id;
-    const hold = holds.find(h => h.id === id);
-
-    let idx = STATE_ORDER.indexOf(hold.state || "none");
-    hold.state = STATE_ORDER[(idx + 1) % STATE_ORDER.length];
-
-    poly.setAttribute("stroke", COLORS[hold.state]);
-}
+stateButtons.forEach(btn => {
+    btn.onclick = () => {
+        if (!selectedPoly) return;
+        const id = selectedPoly.dataset.id;
+        const hold = holds.find(h => h.id === id);
+        hold.state = btn.dataset.state;
+        selectedPoly.setAttribute("stroke", COLORS[hold.state]);
+        stateSelector.classList.add("hidden");
+    };
+});
 
 // ----------------------
-// GESTION DES BLOCS
+// FIREBASE : SAUVEGARDE
 // ----------------------
 async function saveBloc() {
     const bloc = {
@@ -1333,7 +1268,31 @@ async function saveBloc() {
     await loadBlocs();
 }
 
+// ----------------------
+// FIREBASE : CHARGER TOUS LES BLOCS
+// ----------------------
+async function loadBlocs() {
+    const list = document.getElementById("bloc-list");
+    list.innerHTML = "";
 
+    const snap = await getDocs(collection(db, "blocs"));
+    const blocs = [];
+
+    snap.forEach(doc => blocs.push(doc.data()));
+
+    blocs.forEach(b => {
+        const li = document.createElement("li");
+        li.textContent = `${b.name} (${b.grade})`;
+        li.onclick = () => loadBloc(b.name);
+        list.appendChild(li);
+    });
+
+    window.allBlocs = blocs;
+}
+
+// ----------------------
+// FIREBASE : CHARGER UN BLOC
+// ----------------------
 async function loadBloc(name) {
     const ref = doc(db, "blocs", name);
     const snap = await getDoc(ref);
@@ -1358,6 +1317,9 @@ async function loadBloc(name) {
     renderHolds();
 }
 
+// ----------------------
+// FIREBASE : METTRE À JOUR
+// ----------------------
 async function updateBloc() {
     const bloc = {
         name: document.getElementById("bloc-name").value,
@@ -1370,8 +1332,9 @@ async function updateBloc() {
     await loadBlocs();
 }
 
-import { deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-
+// ----------------------
+// FIREBASE : SUPPRIMER
+// ----------------------
 async function deleteBloc() {
     await deleteDoc(doc(db, "blocs", currentBloc));
     await loadBlocs();
@@ -1383,10 +1346,12 @@ async function deleteBloc() {
 document.getElementById("save-bloc").onclick = saveBloc;
 document.getElementById("update-bloc").onclick = updateBloc;
 document.getElementById("delete-bloc").onclick = deleteBloc;
+
 document.getElementById("new-bloc").onclick = () => {
     holds.forEach(h => h.state = "none");
     renderHolds();
 };
+
 // ----------------------
 // INITIALISATION
 // ----------------------
@@ -1394,4 +1359,3 @@ document.getElementById("new-bloc").onclick = () => {
     await loadBlocs();
     renderHolds();
 })();
-
