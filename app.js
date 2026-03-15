@@ -1159,17 +1159,6 @@ const COLORS = {
 
 const STATE_ORDER = ["none", "foot", "hand", "start", "finish"];
 
-// Ces éléments existent dans ton HTML
-const svg = document.getElementById("holds-layer");
-const selector = document.getElementById("hold-selector");
-const selectorList = document.getElementById("selector-list");
-const selectorClose = document.getElementById("selector-close");
-
-const stateSelector = document.getElementById("state-selector");
-const stateSelectorTitle = document.getElementById("state-selector-title");
-const stateButtons = document.querySelectorAll("#state-buttons button");
-const stateSelectorClose = document.getElementById("state-selector-close");
-
 let selectedPoly = null;
 
 // ----------------------
