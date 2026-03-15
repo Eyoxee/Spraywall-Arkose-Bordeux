@@ -1278,7 +1278,7 @@ async function saveBloc() {
         grade: {
             color: document.getElementById("bloc-grade-color").value,
             bars: parseInt(document.getElementById("bloc-grade-bars").value)
-        }
+        },
         desc: document.getElementById("bloc-desc").value,
         holds: holds.map(h => ({ id: h.id, state: h.state }))
     };
@@ -1340,7 +1340,8 @@ async function loadBloc(name) {
     currentBloc = name;
 
     document.getElementById("bloc-name").value = bloc.name;
-    document.getElementById("bloc-grade").value = bloc.grade;
+    document.getElementById("bloc-grade-color").value = bloc.grade.color;
+    document.getElementById("bloc-grade-bars").value = bloc.grade.bars;
     document.getElementById("bloc-desc").value = bloc.desc;
 
     holds.forEach(h => {
