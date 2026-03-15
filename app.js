@@ -1220,23 +1220,32 @@ function handleHoldClick(e) {
         li.onclick = () => {
             selectedPoly = poly;
             selector.classList.add("hidden");
+            document.body.classList.remove("overlay-active"); // ✔ correct
             openStateSelector(poly);
         };
         selectorList.appendChild(li);
     });
 
     selector.classList.remove("hidden");
+    document.body.classList.add("overlay-active"); // ✔ correct
 }
 
-selectorClose.onclick = () => selector.classList.add("hidden");
+selectorClose.onclick = () => {
+    selector.classList.add("hidden");
+    document.body.classList.remove("overlay-active"); // ✔ correct
+};
 
 function openStateSelector(poly) {
     selectedPoly = poly;
     stateSelectorTitle.textContent = "Prise : " + poly.dataset.id;
     stateSelector.classList.remove("hidden");
+    document.body.classList.add("overlay-active"); // ✔ correct
 }
 
-stateSelectorClose.onclick = () => stateSelector.classList.add("hidden");
+stateSelectorClose.onclick = () => {
+    stateSelector.classList.add("hidden");
+    document.body.classList.remove("overlay-active"); // ✔ correct
+};
 
 stateButtons.forEach(btn => {
     btn.onclick = () => {
@@ -1246,16 +1255,30 @@ stateButtons.forEach(btn => {
         hold.state = btn.dataset.state;
         selectedPoly.setAttribute("stroke", COLORS[hold.state]);
         stateSelector.classList.add("hidden");
+        document.body.classList.remove("overlay-active"); // ✔ correct
     };
 });
 
+function arkoseColor(color) {
+    return {
+        jaune: "#FFD800",
+        vert: "#00C853",
+        bleu: "#2979FF",
+        rouge: "#D50000",
+        noir: "#000000",
+        violet: "#AA00FF"
+    }[color];
+}
 // ----------------------
 // FIREBASE : SAUVEGARDE
 // ----------------------
 async function saveBloc() {
     const bloc = {
         name: document.getElementById("bloc-name").value,
-        grade: document.getElementById("bloc-grade").value,
+        grade: {
+            color: document.getElementById("bloc-grade-color").value,
+            bars: parseInt(document.getElementById("bloc-grade-bars").value)
+        }
         desc: document.getElementById("bloc-desc").value,
         holds: holds.map(h => ({ id: h.id, state: h.state }))
     };
@@ -1278,7 +1301,14 @@ async function loadBlocs() {
 
     blocs.forEach(b => {
         const li = document.createElement("li");
-        li.textContent = `${b.name} (${b.grade})`;
+    
+        li.innerHTML = `
+            <span class="bloc-name">${b.name}</span>
+            <span class="bloc-grade" style="color:${arkoseColor(b.grade.color)};">
+                ${"▮".repeat(b.grade.bars)}
+            </span>
+        `;
+    
         li.onclick = () => loadBloc(b.name);
         list.appendChild(li);
     });
