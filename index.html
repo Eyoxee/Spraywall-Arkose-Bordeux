@@ -34,41 +34,41 @@
         <ul id="selector-list"></ul>
         <button id="selector-close">Fermer</button>
     </div>
-    <div id="state-selector" class="hidden">
-    <h3>Choisir l’état</h3>
-    <p id="state-selector-title"></p>
-    <div id="state-buttons">
-        <button data-state="foot">Pied</button>
-        <button data-state="hand">Main</button>
-        <button data-state="start">Départ</button>
-        <button data-state="finish">Arrivée</button>
-        <button data-state="none">Aucun</button>
-    </div>
-    <button id="state-selector-close">Fermer</button>
-    </div>
 
+    <div id="state-selector" class="hidden">
+        <h3>Choisir l’état</h3>
+        <p id="state-selector-title"></p>
+        <div id="state-buttons">
+            <button data-state="foot">Pied</button>
+            <button data-state="hand">Main</button>
+            <button data-state="start">Départ</button>
+            <button data-state="finish">Arrivée</button>
+            <button data-state="none">Aucun</button>
+        </div>
+        <button id="state-selector-close">Fermer</button>
+    </div>
 </div>
 
-<script src="app.js"></script>
+<!-- 🔥 Firebase doit être chargé AVANT app.js -->
 <script type="module">
-  // Import the functions you need from the SDKs you need
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
-  // TODO: Add SDKs for Firebase products that you want to use
-  // https://firebase.google.com/docs/web/setup#available-libraries
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
+    import { getFirestore } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
 
-  // Your web app's Firebase configuration
-  const firebaseConfig = {
-    apiKey: "AIzaSyBC7GF_dkrwqFTwZXGTUh_7I8HvKsN0j98",
-    authDomain: "spraywall-arkose.firebaseapp.com",
-    projectId: "spraywall-arkose",
-    storageBucket: "spraywall-arkose.firebasestorage.app",
-    messagingSenderId: "996431157244",
-    appId: "1:996431157244:web:9ee7c328b9fad3dc938479"
-  };
+    const firebaseConfig = {
+        apiKey: "AIzaSyBC7GF_dkrwqFTwZXGTUh_7I8HvKsN0j98",
+        authDomain: "spraywall-arkose.firebaseapp.com",
+        projectId: "spraywall-arkose",
+        storageBucket: "spraywall-arkose.firebasestorage.app",
+        messagingSenderId: "996431157244",
+        appId: "1:996431157244:web:9ee7c328b9fad3dc938479"
+    };
 
-  // Initialize Firebase
-  const app = initializeApp(firebaseConfig);
+    const app = initializeApp(firebaseConfig);
+    window.db = getFirestore(app);  // 👈 rendu accessible à app.js
 </script>
+
+<!-- Ton script principal -->
+<script type="module" src="app.js"></script>
 
 </body>
 </html>
