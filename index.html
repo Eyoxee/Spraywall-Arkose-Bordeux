@@ -48,25 +48,6 @@
         <button id="state-selector-close">Fermer</button>
     </div>
 </div>
-
-<!-- 🔥 Firebase doit être chargé AVANT app.js -->
-<script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
-    import { getFirestore } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
-
-    const firebaseConfig = {
-        apiKey: "AIzaSyBC7GF_dkrwqFTwZXGTUh_7I8HvKsN0j98",
-        authDomain: "spraywall-arkose.firebaseapp.com",
-        projectId: "spraywall-arkose",
-        storageBucket: "spraywall-arkose.firebasestorage.app",
-        messagingSenderId: "996431157244",
-        appId: "1:996431157244:web:9ee7c328b9fad3dc938479"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    window.db = getFirestore(app);  // 👈 rendu accessible à app.js
-</script>
-
 <!-- Ton script principal -->
 <script type="module" src="app.js"></script>
 
