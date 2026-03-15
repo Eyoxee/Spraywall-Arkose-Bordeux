@@ -1,19 +1,30 @@
-document.addEventListener("DOMContentLoaded", () => {
+// ----------------------
+// IMPORTS FIREBASE (doivent être tout en haut)
+// ----------------------
+import {
+  collection,
+  doc,
+  setDoc,
+  getDocs,
+  getDoc,
+  deleteDoc
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-  import {
-    collection,
-    doc,
-    setDoc,
-    getDocs,
-    getDoc,
-    deleteDoc
-  } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+// Firestore fourni par index.html
+const db = window.db;
 
-  const svg = document.getElementById("holds-layer");
-  const selector = document.getElementById("hold-selector");
-  const selectorList = document.getElementById("selector-list");
-  const selectorClose = document.getElementById("selector-close");
-  
+// ----------------------
+// VARIABLES DOM (maintenant OK car script chargé en bas du HTML)
+// ----------------------
+const svg = document.getElementById("holds-layer");
+const selector = document.getElementById("hold-selector");
+const selectorList = document.getElementById("selector-list");
+const selectorClose = document.getElementById("selector-close");
+const stateSelector = document.getElementById("state-selector");
+const stateSelectorTitle = document.getElementById("state-selector-title");
+const stateButtons = document.querySelectorAll("#state-buttons button");
+const stateSelectorClose = document.getElementById("state-selector-close");
+
 const holds = [
   {
     "id": "A1",
