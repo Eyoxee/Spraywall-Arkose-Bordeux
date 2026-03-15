@@ -1,10 +1,19 @@
+import {
+  collection,
+  doc,
+  setDoc,
+  getDocs,
+  getDoc
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+
+
 const svg = document.getElementById("holds-layer");
 const selector = document.getElementById("hold-selector");
 const selectorList = document.getElementById("selector-list");
 const selectorClose = document.getElementById("selector-close");
 const GITHUB_USER = "Eyoxee";
 const GITHUB_REPO = "Spraywall-Arkose-Bordeaux";
-const GITHUB_TOKEN = "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";
 
 let holds = [
   {
@@ -1178,27 +1187,24 @@ async function fetchBlocs() {
 }
 
 async function loadBlocs() {
+    const list = document.getElementById("bloc-list");
+    list.innerHTML = "";
 
-    const blocList = document.getElementById("bloc-list");
+    const snap = await getDocs(collection(db, "blocs"));
+    const blocs = [];
 
-    if (!blocList) return;
+    snap.forEach(doc => blocs.push(doc.data()));
 
-    blocList.innerHTML = "";
-
-    const blocs = await fetchBlocs();
-
-    blocs.forEach((bloc, index) => {
-
+    blocs.forEach((b, index) => {
         const li = document.createElement("li");
-
-        li.textContent = `${bloc.name} (${bloc.grade})`;
-
-        li.onclick = () => loadBloc(index);
-
-        blocList.appendChild(li);
+        li.textContent = `${b.name} (${b.grade})`;
+        li.onclick = () => loadBloc(b.name);
+        list.appendChild(li);
     });
 
+    window.allBlocs = blocs;
 }
+
 
 async function saveBlocsToGitHub(blocs) {
 
@@ -1323,18 +1329,19 @@ async function saveBloc() {
         holds: holds.map(h => ({ id: h.id, state: h.state }))
     };
 
-    const blocs = await fetchBlocs();
-    blocs.push(bloc);
-
-    await saveBlocsToGitHub(blocs);
-    loadBlocs();
+    await setDoc(doc(collection(db, "blocs"), bloc.name), bloc);
+    await loadBlocs();
 }
 
 
-async function loadBloc(index) {
-    const blocs = await fetchBlocs();
-    const bloc = blocs[index];
-    currentBloc = index;
+async function loadBloc(name) {
+    const ref = doc(db, "blocs", name);
+    const snap = await getDoc(ref);
+
+    if (!snap.exists()) return;
+
+    const bloc = snap.data();
+    currentBloc = name;
 
     document.getElementById("bloc-name").value = bloc.name;
     document.getElementById("bloc-grade").value = bloc.grade;
@@ -1351,30 +1358,24 @@ async function loadBloc(index) {
     renderHolds();
 }
 
-
 async function updateBloc() {
-    const blocs = await fetchBlocs();
-
-    blocs[currentBloc] = {
+    const bloc = {
         name: document.getElementById("bloc-name").value,
         grade: document.getElementById("bloc-grade").value,
         desc: document.getElementById("bloc-desc").value,
         holds: holds.map(h => ({ id: h.id, state: h.state }))
     };
 
-    await saveBlocsToGitHub(blocs);
-    loadBlocs();
+    await setDoc(doc(db, "blocs", bloc.name), bloc);
+    await loadBlocs();
 }
 
+import { deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 async function deleteBloc() {
-    const blocs = await fetchBlocs();
-    blocs.splice(currentBloc, 1);
-
-    await saveBlocsToGitHub(blocs);
-    loadBlocs();
+    await deleteDoc(doc(db, "blocs", currentBloc));
+    await loadBlocs();
 }
-
 
 // ----------------------
 // BOUTONS
