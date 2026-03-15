@@ -1155,7 +1155,10 @@ const holds = [
     "id": "66",
     "points": "680,621.7916717529297 689,620.7916717529297 690,626.7916717529297 687,628.7916717529297 682,627.7916717529297 680,621.7916717529297"
   }
-]; // rempli par ton JSON de prises
+];
+holds.forEach(h => {
+    if (h.state === undefined) h.state = "none";
+});// rempli par ton JSON de prises
 let currentBloc = null;
 
 const COLORS = {
