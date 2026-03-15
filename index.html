@@ -16,7 +16,24 @@
     <div id="sidebar">
         <h2>Bloc en cours</h2>
         <label>Nom : <input id="bloc-name"></label>
-        <label>Cotation : <input id="bloc-grade"></label>
+        <label>Cotation :
+            <select id="bloc-grade-color">
+                <option value="jaune">Jaune</option>
+                <option value="vert">Vert</option>
+                <option value="bleu">Bleu</option>
+                <option value="rouge">Rouge</option>
+                <option value="noir">Noir</option>
+                <option value="violet">Violet</option>
+            </select>
+
+            <select id="bloc-grade-bars">
+                <option value="1">1 barre</option>
+                <option value="2">2 barres</option>
+                <option value="3">3 barres</option>
+                <option value="4">4 barres</option>
+                <option value="5">5 barres</option>
+            </select>
+        </label>
         <label>Description : <textarea id="bloc-desc"></textarea></label>
 
         <button id="save-bloc">Enregistrer le bloc</button>
