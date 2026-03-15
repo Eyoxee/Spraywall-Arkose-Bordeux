@@ -1162,21 +1162,6 @@ const STATE_ORDER = ["none", "foot", "hand", "start", "finish"];
 let selectedPoly = null;
 
 // ----------------------
-// IMPORT FIREBASE
-// ----------------------
-import {
-    collection,
-    doc,
-    setDoc,
-    getDocs,
-    getDoc,
-    deleteDoc
-} from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
-
-// Firestore est fourni par index.html via window.db
-const db = window.db;
-
-// ----------------------
 // RENDU DES PRISES
 // ----------------------
 function renderHolds() {
