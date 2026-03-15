@@ -1294,21 +1294,29 @@ async function loadBlocs() {
     const list = document.getElementById("bloc-list");
     list.innerHTML = "";
 
+    // Charger tous les blocs depuis Firestore
     const snap = await getDocs(collection(db, "blocs"));
     const blocs = [];
-
     snap.forEach(doc => blocs.push(doc.data()));
 
-    blocs.forEach(b => {
+    // Récupérer les couleurs cochées
+    const activeColors = [...document.querySelectorAll("#filters input:checked")]
+        .map(cb => cb.value);
+
+    // Filtrer les blocs selon la couleur
+    const filtered = blocs.filter(b => activeColors.includes(b.grade.color));
+
+    // Afficher les blocs filtrés
+    filtered.forEach(b => {
         const li = document.createElement("li");
-    
+
         li.innerHTML = `
             <span class="bloc-name">${b.name}</span>
             <span class="bloc-grade" style="color:${arkoseColor(b.grade.color)};">
                 ${"▮".repeat(b.grade.bars)}
             </span>
         `;
-    
+
         li.onclick = () => loadBloc(b.name);
         list.appendChild(li);
     });
@@ -1316,6 +1324,9 @@ async function loadBlocs() {
     window.allBlocs = blocs;
 }
 
+document.querySelectorAll("#filters input").forEach(cb => {
+    cb.addEventListener("change", loadBlocs);
+});
 // ----------------------
 // FIREBASE : CHARGER UN BLOC
 // ----------------------
