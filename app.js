@@ -10,9 +10,17 @@ import {
   deleteDoc
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-// Firestore fourni par index.html
-const db = window.db;
+const firebaseConfig = {
+  apiKey: "AIzaSyBC7GF_dkrwqFTwZXGTUh_7I8HvKsN0j98",
+  authDomain: "spraywall-arkose.firebaseapp.com",
+  projectId: "spraywall-arkose",
+  storageBucket: "spraywall-arkose.firebasestorage.app",
+  messagingSenderId: "996431157244",
+  appId: "1:996431157244:web:9ee7c328b9fad3dc938479"
+};
 
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 // ----------------------
 // VARIABLES DOM (maintenant OK car script chargé en bas du HTML)
 // ----------------------
