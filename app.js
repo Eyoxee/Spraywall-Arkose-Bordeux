@@ -1,18 +1,19 @@
-import {
-  collection,
-  doc,
-  setDoc,
-  getDocs,
-  getDoc
-} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+document.addEventListener("DOMContentLoaded", () => {
 
-const svg = document.getElementById("holds-layer");
-const selector = document.getElementById("hold-selector");
-const selectorList = document.getElementById("selector-list");
-const selectorClose = document.getElementById("selector-close");
-const GITHUB_USER = "Eyoxee";
-const GITHUB_REPO = "Spraywall-Arkose-Bordeaux";
+  import {
+    collection,
+    doc,
+    setDoc,
+    getDocs,
+    getDoc,
+    deleteDoc
+  } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
+  const svg = document.getElementById("holds-layer");
+  const selector = document.getElementById("hold-selector");
+  const selectorList = document.getElementById("selector-list");
+  const selectorClose = document.getElementById("selector-close");
+  
 const holds = [
   {
     "id": "A1",
@@ -1357,3 +1358,4 @@ document.getElementById("new-bloc").onclick = () => {
     await loadBlocs();
     renderHolds();
 })();
+  });
