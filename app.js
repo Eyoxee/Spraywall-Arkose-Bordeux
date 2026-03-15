@@ -4,7 +4,7 @@ const selectorList = document.getElementById("selector-list");
 const selectorClose = document.getElementById("selector-close");
 const GITHUB_USER = "Eyoxee";
 const GITHUB_REPO = "Spraywall-Arkose-Bordeaux";
-const GITHUB_TOKEN = "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";
+const GITHUB_TOKEN = "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";
 
 let holds = [
   {
