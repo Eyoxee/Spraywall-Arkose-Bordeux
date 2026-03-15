@@ -50,5 +50,19 @@
 </div>
 
 <script src="app.js"></script>
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+  import { getFirestore } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+  window.firebaseConfig = {
+    apiKey: "AIzaSyXXXXXXX",
+    authDomain: "spraywall-arkose.firebaseapp.com",
+    projectId: "spraywall-arkose"
+  };
+
+  window.firebaseApp = initializeApp(window.firebaseConfig);
+  window.db = getFirestore(window.firebaseApp);
+</script>
+
 </body>
 </html>
