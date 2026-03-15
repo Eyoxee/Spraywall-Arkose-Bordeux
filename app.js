@@ -1343,4 +1343,4 @@ document.getElementById("new-bloc").onclick = () => {
     await loadBlocs();
     renderHolds();
 })();
-  });
+
