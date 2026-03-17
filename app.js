@@ -1434,43 +1434,18 @@ async function loadBloc(name) {
 
   const user = auth.currentUser;
   if (user && user.uid === bloc.owner) {
-    document.getElementById("update-bloc").style.display = "block";
-    document.getElementById("delete-bloc").style.display = "block";
-  } else {
-    document.getElementById("update-bloc").style.display = "none";
-    document.getElementById("delete-bloc").style.display = "none";
-  }
+    const user = auth.currentUser;
+
+    if (user && user.uid === bloc.owner) {
+        document.getElementById("save-bloc").style.display = "block";
+        document.getElementById("delete-bloc").style.display = "block";
+    } else {
+        document.getElementById("save-bloc").style.display = "none";
+        document.getElementById("delete-bloc").style.display = "none";
+    }
+ 
 
   renderHolds();
-}
-
-// ----------------------
-// FIREBASE : METTRE À JOUR
-// ----------------------
-async function updateBloc() {
-  const user = auth.currentUser;
-  if (!user) {
-    alert("Tu dois être connecté pour modifier un bloc.");
-    return;
-  }
-  if (user.uid !== currentBlocOwner) {
-    alert("Tu ne peux pas modifier un bloc qui ne t'appartient pas.");
-    return;
-  }
-
-  const bloc = {
-    name: document.getElementById("bloc-name").value,
-    grade: {
-      color: document.getElementById("bloc-grade-color").value,
-      bars: parseInt(document.getElementById("bloc-grade-bars").value)
-    },
-    desc: document.getElementById("bloc-desc").value,
-    holds: holds.map(h => ({ id: h.id, state: h.state })),
-    owner: currentBlocOwner
-  };
-
-  await setDoc(doc(db, "blocs", bloc.name), bloc);
-  await loadBlocs();
 }
 
 // ----------------------
@@ -1497,7 +1472,6 @@ async function deleteBloc() {
 // BOUTONS
 // ----------------------
 document.getElementById("save-bloc").onclick = saveBloc;
-document.getElementById("update-bloc").onclick = updateBloc;
 document.getElementById("delete-bloc").onclick = deleteBloc;
 
 document.getElementById("new-bloc").onclick = () => {
