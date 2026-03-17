@@ -13,11 +13,27 @@ import {
 } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
 import {
   getAuth,
+  GoogleAuthProvider,
+  signInWithPopup,
+  signInWithRedirect,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   signOut,
   onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-auth.js";
+
+const provider = new GoogleAuthProvider();
+
+const googleBtn = document.getElementById("auth-google");
+
+googleBtn.onclick = async () => {
+    try {
+        await signInWithPopup(auth, provider);
+        // ou signInWithRedirect(auth, provider); si tu préfères
+    } catch (e) {
+        authStatus.textContent = e.message;
+    }
+};
 
 const firebaseConfig = {
   apiKey: "AIzaSyBC7GF_dkrwqFTwZXGTUh_7I8HvKsN0j98",
