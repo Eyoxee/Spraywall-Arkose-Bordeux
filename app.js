@@ -1333,12 +1333,12 @@ logoutBtn.onclick = async () => {
   await signOut(auth);
 };
 
-onAuthStateChanged(auth, user => {
+onAuthStateChanged(auth, async user => {
   if (user) {
     const snap = await getDoc(doc(db, "users", user.uid));
     window.currentPseudo = snap.exists() ? snap.data().pseudo : "Anonyme";
     
-    authStatus.textContent = `Connecté en tant que ${user.email}`;
+    authStatus.textContent = `Connecté en tant que ${window.currentPseudo}`;
     logoutBtn.style.display = "block";
     loginBtn.style.display = "none";
     signupBtn.style.display = "none";
