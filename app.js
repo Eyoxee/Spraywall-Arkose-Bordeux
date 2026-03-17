@@ -1495,7 +1495,7 @@ document.getElementById("new-bloc").onclick = () => {
   renderHolds();
   currentBloc = null;
   currentBlocOwner = null;
-  document.getElementById("update-bloc").style.display = "none";
+  
   document.getElementById("delete-bloc").style.display = "none";
 };
 
