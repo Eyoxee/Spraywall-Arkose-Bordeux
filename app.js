@@ -1452,15 +1452,23 @@ async function loadBloc(name) {
 }
 
  document.getElementById("new-bloc").onclick = () => {
+    // Reset des prises
     holds.forEach(h => h.state = "none");
     renderHolds();
 
+    // Reset du contexte
     currentBloc = null;
     currentBlocOwner = null;
 
+    // Reset des champs textuels
     document.getElementById("bloc-name").value = "";
     document.getElementById("bloc-desc").value = "";
 
+    // Reset des champs de grade Arkose
+    document.getElementById("bloc-grade-color").value = "jaune"; // la valeur par défaut
+    document.getElementById("bloc-grade-bars").value = "1";      // idem
+
+    // Affichage des boutons
     document.getElementById("save-bloc").style.display = "block";
     document.getElementById("delete-bloc").style.display = "none";
 };
