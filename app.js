@@ -1503,6 +1503,5 @@ document.getElementById("new-bloc").onclick = () => {
 // INITIALISATION
 // ----------------------
 (async () => {
-  await loadBlocs();
   renderHolds();
 })();
