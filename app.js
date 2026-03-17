@@ -1309,7 +1309,13 @@ stateButtons.forEach(btn => {
 // ----------------------
 signupBtn.onclick = async () => {
   try {
-    await createUserWithEmailAndPassword(auth, emailInput.value, passwordInput.value);
+    const cred = await createUserWithEmailAndPassword(auth, emailInput.value, passwordInput.value);
+    const user = cred.user;
+
+    await setDoc(doc(db, "users", user.uid), {
+      pseudo: document.getElementById("auth-pseudo").value
+    });
+
   } catch (e) {
     authStatus.textContent = e.message;
   }
@@ -1329,6 +1335,9 @@ logoutBtn.onclick = async () => {
 
 onAuthStateChanged(auth, user => {
   if (user) {
+    const snap = await getDoc(doc(db, "users", user.uid));
+    window.currentPseudo = snap.exists() ? snap.data().pseudo : "Anonyme";
+    
     authStatus.textContent = `Connecté en tant que ${user.email}`;
     logoutBtn.style.display = "block";
     loginBtn.style.display = "none";
@@ -1424,7 +1433,10 @@ async function loadBloc(name) {
   const bloc = snap.data();
   currentBloc = name;
   currentBlocOwner = bloc.owner || null;
+  const ownerSnap = await getDoc(doc(db, "users", bloc.owner));
+  const ownerPseudo = ownerSnap.exists() ? ownerSnap.data().pseudo : "Inconnu";
 
+  document.getElementById("bloc-owner").textContent = `Ouvert par ${ownerPseudo}`;
   document.getElementById("bloc-name").value = bloc.name;
   document.getElementById("bloc-grade-color").value = bloc.grade.color;
   document.getElementById("bloc-grade-bars").value = bloc.grade.bars;
