@@ -1,5 +1,5 @@
 // ----------------------
-// IMPORTS FIREBASE (doivent être tout en haut)
+// FIREBASE INIT
 // ----------------------
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
 import {
@@ -11,6 +11,14 @@ import {
   getDoc,
   deleteDoc
 } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
+import {
+  getAuth,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  signOut,
+  onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/12.10.0/firebase-auth.js";
+
 const firebaseConfig = {
   apiKey: "AIzaSyBC7GF_dkrwqFTwZXGTUh_7I8HvKsN0j98",
   authDomain: "spraywall-arkose.firebaseapp.com",
@@ -22,8 +30,10 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+const auth = getAuth(app);
+
 // ----------------------
-// VARIABLES DOM (maintenant OK car script chargé en bas du HTML)
+// DOM
 // ----------------------
 const svg = document.getElementById("holds-layer");
 const selector = document.getElementById("hold-selector");
@@ -34,6 +44,12 @@ const stateSelectorTitle = document.getElementById("state-selector-title");
 const stateButtons = document.querySelectorAll("#state-buttons button");
 const stateSelectorClose = document.getElementById("state-selector-close");
 
+const emailInput = document.getElementById("auth-email");
+const passwordInput = document.getElementById("auth-password");
+const signupBtn = document.getElementById("auth-signup");
+const loginBtn = document.getElementById("auth-login");
+const logoutBtn = document.getElementById("auth-logout");
+const authStatus = document.getElementById("auth-status");
 const holds = [
   {
     "id": "A1",
@@ -1157,225 +1173,308 @@ const holds = [
   }
 ];
 holds.forEach(h => {
-    if (h.state === undefined) h.state = "none";
-});// rempli par ton JSON de prises
-let currentBloc = null;
+  if (h.state === undefined) h.state = "none";
+});
 
+let currentBloc = null;
+let currentBlocOwner = null;
+let selectedPoly = null;
+
+// ----------------------
+// CONSTANTES
+// ----------------------
 const COLORS = {
-    none: "transparent",
-    foot: "blue",
-    hand: "green",
-    start: "yellow",
-    finish: "red"
+  none: "transparent",
+  foot: "blue",
+  hand: "green",
+  start: "yellow",
+  finish: "red"
 };
 
-const STATE_ORDER = ["none", "foot", "hand", "start", "finish"];
-
-let selectedPoly = null;
+function arkoseColor(color) {
+  return {
+    jaune: "#FFD800",
+    vert: "#00C853",
+    bleu: "#2979FF",
+    rouge: "#D50000",
+    noir: "#000000",
+    violet: "#AA00FF"
+  }[color];
+}
 
 // ----------------------
 // RENDU DES PRISES
 // ----------------------
 function renderHolds() {
-    svg.innerHTML = "";
+  svg.innerHTML = "";
 
-    holds.forEach(hold => {
-        const poly = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
+  holds.forEach(hold => {
+    const poly = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
 
-        poly.setAttribute("points", hold.points);
-        poly.setAttribute("stroke", COLORS[hold.state || "none"]);
-        poly.setAttribute("fill", "transparent");
-        poly.setAttribute("stroke-width", "3");
-        poly.setAttribute("pointer-events", "all");
-        poly.dataset.id = hold.id;
+    poly.setAttribute("points", hold.points);
+    poly.setAttribute("stroke", COLORS[hold.state || "none"]);
+    poly.setAttribute("fill", "transparent");
+    poly.setAttribute("stroke-width", "3");
+    poly.setAttribute("pointer-events", "all");
+    poly.dataset.id = hold.id;
 
-        poly.addEventListener("click", handleHoldClick);
+    poly.addEventListener("click", handleHoldClick);
 
-        svg.appendChild(poly);
-    });
+    svg.appendChild(poly);
+  });
 }
 
 // ----------------------
 // GESTION DES CLICS SUR LES PRISES
 // ----------------------
 function handleHoldClick(e) {
-    e.stopPropagation();
+  e.stopPropagation();
 
-    const elements = document.elementsFromPoint(e.clientX, e.clientY);
-    const clicked = elements.filter(el => el.tagName === "polygon");
+  const elements = document.elementsFromPoint(e.clientX, e.clientY);
+  const clicked = elements.filter(el => el.tagName === "polygon");
 
-    if (clicked.length === 0) return;
+  if (clicked.length === 0) return;
 
-    if (clicked.length === 1) {
-        selectedPoly = clicked[0];
-        openStateSelector(selectedPoly);
-        return;
-    }
+  if (clicked.length === 1) {
+    selectedPoly = clicked[0];
+    openStateSelector(selectedPoly);
+    return;
+  }
 
-    selectorList.innerHTML = "";
+  selectorList.innerHTML = "";
 
-    clicked.forEach(poly => {
-        const li = document.createElement("li");
-        li.textContent = poly.dataset.id;
-        li.onclick = () => {
-            selectedPoly = poly;
-            selector.classList.add("hidden");
-            document.body.classList.remove("overlay-active"); // ✔ correct
-            openStateSelector(poly);
-        };
-        selectorList.appendChild(li);
-    });
+  clicked.forEach(poly => {
+    const li = document.createElement("li");
+    li.textContent = poly.dataset.id;
+    li.onclick = () => {
+      selectedPoly = poly;
+      selector.classList.add("hidden");
+      document.body.classList.remove("overlay-active");
+      openStateSelector(poly);
+    };
+    selectorList.appendChild(li);
+  });
 
-    selector.classList.remove("hidden");
-    document.body.classList.add("overlay-active"); // ✔ correct
+  selector.classList.remove("hidden");
+  document.body.classList.add("overlay-active");
 }
 
 selectorClose.onclick = () => {
-    selector.classList.add("hidden");
-    document.body.classList.remove("overlay-active"); // ✔ correct
+  selector.classList.add("hidden");
+  document.body.classList.remove("overlay-active");
 };
 
 function openStateSelector(poly) {
-    selectedPoly = poly;
-    stateSelectorTitle.textContent = "Prise : " + poly.dataset.id;
-    stateSelector.classList.remove("hidden");
-    document.body.classList.add("overlay-active"); // ✔ correct
+  selectedPoly = poly;
+  stateSelectorTitle.textContent = "Prise : " + poly.dataset.id;
+  stateSelector.classList.remove("hidden");
+  document.body.classList.add("overlay-active");
 }
 
 stateSelectorClose.onclick = () => {
-    stateSelector.classList.add("hidden");
-    document.body.classList.remove("overlay-active"); // ✔ correct
+  stateSelector.classList.add("hidden");
+  document.body.classList.remove("overlay-active");
 };
 
 stateButtons.forEach(btn => {
-    btn.onclick = () => {
-        if (!selectedPoly) return;
-        const id = selectedPoly.dataset.id;
-        const hold = holds.find(h => h.id === id);
-        hold.state = btn.dataset.state;
-        selectedPoly.setAttribute("stroke", COLORS[hold.state]);
-        stateSelector.classList.add("hidden");
-        document.body.classList.remove("overlay-active"); // ✔ correct
-    };
+  btn.onclick = () => {
+    if (!selectedPoly) return;
+    const id = selectedPoly.dataset.id;
+    const hold = holds.find(h => h.id === id);
+    hold.state = btn.dataset.state;
+    selectedPoly.setAttribute("stroke", COLORS[hold.state]);
+    stateSelector.classList.add("hidden");
+    document.body.classList.remove("overlay-active");
+  };
 });
 
-function arkoseColor(color) {
-    return {
-        jaune: "#FFD800",
-        vert: "#00C853",
-        bleu: "#2979FF",
-        rouge: "#D50000",
-        noir: "#000000",
-        violet: "#AA00FF"
-    }[color];
-}
+// ----------------------
+// AUTH
+// ----------------------
+signupBtn.onclick = async () => {
+  try {
+    await createUserWithEmailAndPassword(auth, emailInput.value, passwordInput.value);
+  } catch (e) {
+    authStatus.textContent = e.message;
+  }
+};
+
+loginBtn.onclick = async () => {
+  try {
+    await signInWithEmailAndPassword(auth, emailInput.value, passwordInput.value);
+  } catch (e) {
+    authStatus.textContent = e.message;
+  }
+};
+
+logoutBtn.onclick = async () => {
+  await signOut(auth);
+};
+
+onAuthStateChanged(auth, user => {
+  if (user) {
+    authStatus.textContent = `Connecté en tant que ${user.email}`;
+    logoutBtn.style.display = "block";
+    loginBtn.style.display = "none";
+    signupBtn.style.display = "none";
+    loadBlocs();
+  } else {
+    authStatus.textContent = "Non connecté";
+    logoutBtn.style.display = "none";
+    loginBtn.style.display = "block";
+    signupBtn.style.display = "block";
+    document.getElementById("bloc-list").innerHTML = "";
+    currentBloc = null;
+    currentBlocOwner = null;
+    document.getElementById("update-bloc").style.display = "none";
+    document.getElementById("delete-bloc").style.display = "none";
+  }
+});
+
 // ----------------------
 // FIREBASE : SAUVEGARDE
 // ----------------------
 async function saveBloc() {
-    const bloc = {
-        name: document.getElementById("bloc-name").value,
-        grade: {
-            color: document.getElementById("bloc-grade-color").value,
-            bars: parseInt(document.getElementById("bloc-grade-bars").value)
-        },
-        desc: document.getElementById("bloc-desc").value,
-        holds: holds.map(h => ({ id: h.id, state: h.state }))
-    };
+  const user = auth.currentUser;
+  if (!user) {
+    alert("Tu dois être connecté pour enregistrer un bloc.");
+    return;
+  }
 
-    await setDoc(doc(collection(db, "blocs"), bloc.name), bloc);
-    await loadBlocs();
+  const bloc = {
+    name: document.getElementById("bloc-name").value,
+    grade: {
+      color: document.getElementById("bloc-grade-color").value,
+      bars: parseInt(document.getElementById("bloc-grade-bars").value)
+    },
+    desc: document.getElementById("bloc-desc").value,
+    holds: holds.map(h => ({ id: h.id, state: h.state })),
+    owner: user.uid
+  };
+
+  await setDoc(doc(collection(db, "blocs"), bloc.name), bloc);
+  await loadBlocs();
 }
 
 // ----------------------
 // FIREBASE : CHARGER TOUS LES BLOCS
 // ----------------------
 async function loadBlocs() {
-    const list = document.getElementById("bloc-list");
-    list.innerHTML = "";
+  const list = document.getElementById("bloc-list");
+  list.innerHTML = "";
 
-    // Charger tous les blocs depuis Firestore
-    const snap = await getDocs(collection(db, "blocs"));
-    const blocs = [];
-    snap.forEach(doc => blocs.push(doc.data()));
+  const snap = await getDocs(collection(db, "blocs"));
+  const blocs = [];
+  snap.forEach(docSnap => blocs.push(docSnap.data()));
 
-    // Récupérer les couleurs cochées
-    const activeColors = [...document.querySelectorAll("#filters input:checked")]
-        .map(cb => cb.value);
+  const activeColors = [...document.querySelectorAll("#filters input:checked")]
+    .map(cb => cb.value);
 
-    // Filtrer les blocs selon la couleur
-    const filtered = blocs.filter(b => activeColors.includes(b.grade.color));
+  const filtered = blocs.filter(b => activeColors.includes(b.grade.color));
 
-    // Afficher les blocs filtrés
-    filtered.forEach(b => {
-        const li = document.createElement("li");
+  filtered.forEach(b => {
+    const li = document.createElement("li");
 
-        li.innerHTML = `
-            <span class="bloc-name">${b.name}</span>
-            <span class="bloc-grade" style="color:${arkoseColor(b.grade.color)};">
-                ${"▮".repeat(b.grade.bars)}
-            </span>
-        `;
+    li.innerHTML = `
+      <span class="bloc-name">${b.name}</span>
+      <span class="bloc-grade" style="color:${arkoseColor(b.grade.color)};">
+        ${"▮".repeat(b.grade.bars)}
+      </span>
+    `;
 
-        li.onclick = () => loadBloc(b.name);
-        list.appendChild(li);
-    });
+    li.onclick = () => loadBloc(b.name);
+    list.appendChild(li);
+  });
 
-    window.allBlocs = blocs;
+  window.allBlocs = blocs;
 }
 
 document.querySelectorAll("#filters input").forEach(cb => {
-    cb.addEventListener("change", loadBlocs);
+  cb.addEventListener("change", loadBlocs);
 });
+
 // ----------------------
 // FIREBASE : CHARGER UN BLOC
 // ----------------------
 async function loadBloc(name) {
-    const ref = doc(db, "blocs", name);
-    const snap = await getDoc(ref);
+  const ref = doc(db, "blocs", name);
+  const snap = await getDoc(ref);
 
-    if (!snap.exists()) return;
+  if (!snap.exists()) return;
 
-    const bloc = snap.data();
-    currentBloc = name;
+  const bloc = snap.data();
+  currentBloc = name;
+  currentBlocOwner = bloc.owner || null;
 
-    document.getElementById("bloc-name").value = bloc.name;
-    document.getElementById("bloc-grade-color").value = bloc.grade.color;
-    document.getElementById("bloc-grade-bars").value = bloc.grade.bars;
-    document.getElementById("bloc-desc").value = bloc.desc;
+  document.getElementById("bloc-name").value = bloc.name;
+  document.getElementById("bloc-grade-color").value = bloc.grade.color;
+  document.getElementById("bloc-grade-bars").value = bloc.grade.bars;
+  document.getElementById("bloc-desc").value = bloc.desc;
 
-    holds.forEach(h => {
-        const saved = bloc.holds.find(s => s.id === h.id);
-        h.state = saved ? saved.state : "none";
-    });
+  holds.forEach(h => {
+    const saved = bloc.holds.find(s => s.id === h.id);
+    h.state = saved ? saved.state : "none";
+  });
 
+  const user = auth.currentUser;
+  if (user && user.uid === bloc.owner) {
     document.getElementById("update-bloc").style.display = "block";
     document.getElementById("delete-bloc").style.display = "block";
+  } else {
+    document.getElementById("update-bloc").style.display = "none";
+    document.getElementById("delete-bloc").style.display = "none";
+  }
 
-    renderHolds();
+  renderHolds();
 }
 
 // ----------------------
 // FIREBASE : METTRE À JOUR
 // ----------------------
 async function updateBloc() {
-    const bloc = {
-        name: document.getElementById("bloc-name").value,
-        grade: document.getElementById("bloc-grade").value,
-        desc: document.getElementById("bloc-desc").value,
-        holds: holds.map(h => ({ id: h.id, state: h.state }))
-    };
+  const user = auth.currentUser;
+  if (!user) {
+    alert("Tu dois être connecté pour modifier un bloc.");
+    return;
+  }
+  if (user.uid !== currentBlocOwner) {
+    alert("Tu ne peux pas modifier un bloc qui ne t'appartient pas.");
+    return;
+  }
 
-    await setDoc(doc(db, "blocs", bloc.name), bloc);
-    await loadBlocs();
+  const bloc = {
+    name: document.getElementById("bloc-name").value,
+    grade: {
+      color: document.getElementById("bloc-grade-color").value,
+      bars: parseInt(document.getElementById("bloc-grade-bars").value)
+    },
+    desc: document.getElementById("bloc-desc").value,
+    holds: holds.map(h => ({ id: h.id, state: h.state })),
+    owner: currentBlocOwner
+  };
+
+  await setDoc(doc(db, "blocs", bloc.name), bloc);
+  await loadBlocs();
 }
 
 // ----------------------
 // FIREBASE : SUPPRIMER
 // ----------------------
 async function deleteBloc() {
-    await deleteDoc(doc(db, "blocs", currentBloc));
-    await loadBlocs();
+  const user = auth.currentUser;
+  if (!user) {
+    alert("Tu dois être connecté pour supprimer un bloc.");
+    return;
+  }
+  if (user.uid !== currentBlocOwner) {
+    alert("Tu ne peux pas supprimer un bloc qui ne t'appartient pas.");
+    return;
+  }
+
+  await deleteDoc(doc(db, "blocs", currentBloc));
+  currentBloc = null;
+  currentBlocOwner = null;
+  await loadBlocs();
 }
 
 // ----------------------
@@ -1386,15 +1485,18 @@ document.getElementById("update-bloc").onclick = updateBloc;
 document.getElementById("delete-bloc").onclick = deleteBloc;
 
 document.getElementById("new-bloc").onclick = () => {
-    holds.forEach(h => h.state = "none");
-    renderHolds();
+  holds.forEach(h => h.state = "none");
+  renderHolds();
+  currentBloc = null;
+  currentBlocOwner = null;
+  document.getElementById("update-bloc").style.display = "none";
+  document.getElementById("delete-bloc").style.display = "none";
 };
 
 // ----------------------
 // INITIALISATION
 // ----------------------
 (async () => {
-    await loadBlocs();
-    renderHolds();
+  await loadBlocs();
+  renderHolds();
 })();
-
