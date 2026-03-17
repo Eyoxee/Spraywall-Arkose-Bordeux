@@ -1387,43 +1387,6 @@ async function saveBloc() {
 // ----------------------
 // FIREBASE : CHARGER TOUS LES BLOCS
 // ----------------------
-async function loadBlocs() {
-  const list = document.getElementById("bloc-list");
-  list.innerHTML = "";
-
-  const snap = await getDocs(collection(db, "blocs"));
-  const blocs = [];
-  snap.forEach(docSnap => blocs.push(docSnap.data()));
-
-  const activeColors = [...document.querySelectorAll("#filters input:checked")]
-    .map(cb => cb.value);
-
-  const filtered = blocs.filter(b => activeColors.includes(b.grade.color));
-
-  filtered.forEach(b => {
-    const li = document.createElement("li");
-
-    li.innerHTML = `
-      <span class="bloc-name">${b.name}</span>
-      <span class="bloc-grade" style="color:${arkoseColor(b.grade.color)};">
-        ${"▮".repeat(b.grade.bars)}
-      </span>
-    `;
-
-    li.onclick = () => loadBloc(b.name);
-    list.appendChild(li);
-  });
-
-  window.allBlocs = blocs;
-}
-
-document.querySelectorAll("#filters input").forEach(cb => {
-  cb.addEventListener("change", loadBlocs);
-});
-
-// ----------------------
-// FIREBASE : CHARGER UN BLOC
-// ----------------------
 async function loadBloc(name) {
   const ref = doc(db, "blocs", name);
   const snap = await getDoc(ref);
@@ -1433,24 +1396,40 @@ async function loadBloc(name) {
   const bloc = snap.data();
   currentBloc = name;
   currentBlocOwner = bloc.owner || null;
-  const ownerSnap = await getDoc(doc(db, "users", bloc.owner));
-  const ownerPseudo = ownerSnap.exists() ? ownerSnap.data().pseudo : "Inconnu";
 
-  document.getElementById("bloc-owner").textContent = `Ouvert par ${ownerPseudo}`;
+  // --- 1) Charger les infos du bloc ---
   document.getElementById("bloc-name").value = bloc.name;
   document.getElementById("bloc-grade-color").value = bloc.grade.color;
   document.getElementById("bloc-grade-bars").value = bloc.grade.bars;
   document.getElementById("bloc-desc").value = bloc.desc;
 
-  // Charger les états des prises
+  // --- 2) Charger les prises ---
   holds.forEach(h => {
     const saved = bloc.holds.find(s => s.id === h.id);
     h.state = saved ? saved.state : "none";
   });
 
-  // Affichage des boutons selon propriétaire
+  // --- 3) Charger le pseudo du créateur ---
+  const ownerSnap = await getDoc(doc(db, "users", bloc.owner));
+  const ownerPseudo = ownerSnap.exists() ? ownerSnap.data().pseudo : "Inconnu";
+  document.getElementById("bloc-owner").textContent = `Ouvert par ${ownerPseudo}`;
+
+  // --- 4) 🔥 ICI : AJOUTER TON CODE FINISHERS ---
+  const finishers = bloc.finishers || [];
   const user = auth.currentUser;
 
+  document.getElementById("finish-count").textContent =
+    `${finishers.length} grimpeur(s) ont fini ce bloc`;
+
+  if (user) {
+    if (finishers.includes(user.uid)) {
+      document.getElementById("toggle-finish").textContent = "Retirer ma validation";
+    } else {
+      document.getElementById("toggle-finish").textContent = "J’ai fini ce bloc";
+    }
+  }
+
+  // --- 5) Affichage des boutons selon propriétaire ---
   if (user && user.uid === bloc.owner) {
     document.getElementById("save-bloc").style.display = "block";
     document.getElementById("delete-bloc").style.display = "block";
@@ -1459,9 +1438,10 @@ async function loadBloc(name) {
     document.getElementById("delete-bloc").style.display = "none";
   }
 
-  // IMPORTANT : toujours re-render les prises
+  // --- 6) Re-render des prises ---
   renderHolds();
 }
+
 
  document.getElementById("new-bloc").onclick = () => {
     // Reset des prises
@@ -1484,6 +1464,28 @@ async function loadBloc(name) {
     document.getElementById("save-bloc").style.display = "block";
     document.getElementById("delete-bloc").style.display = "none";
 };
+
+document.getElementById("toggle-finish").onclick = async () => {
+  const user = auth.currentUser;
+  if (!user) return alert("Connecte-toi pour valider un bloc.");
+
+  const ref = doc(db, "blocs", currentBloc);
+  const snap = await getDoc(ref);
+  if (!snap.exists()) return;
+
+  const bloc = snap.data();
+  bloc.finishers = bloc.finishers || [];
+
+  if (bloc.finishers.includes(user.uid)) {
+    bloc.finishers = bloc.finishers.filter(uid => uid !== user.uid);
+  } else {
+    bloc.finishers.push(user.uid);
+  }
+
+  await setDoc(ref, bloc);
+  loadBloc(currentBloc);
+};
+
 // ----------------------
 // FIREBASE : SUPPRIMER
 // ----------------------
