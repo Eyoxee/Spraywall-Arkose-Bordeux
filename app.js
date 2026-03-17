@@ -1492,20 +1492,6 @@ async function deleteBloc() {
   await loadBlocs();
 }
 
-// ----------------------
-// BOUTONS
-// ----------------------
-document.getElementById("save-bloc").onclick = saveBloc;
-document.getElementById("delete-bloc").onclick = deleteBloc;
-
-document.getElementById("new-bloc").onclick = () => {
-  holds.forEach(h => h.state = "none");
-  renderHolds();
-  currentBloc = null;
-  currentBlocOwner = null;
-  
-  document.getElementById("delete-bloc").style.display = "none";
-};
 
 // ----------------------
 // INITIALISATION
