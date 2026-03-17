@@ -1387,6 +1387,41 @@ async function saveBloc() {
 // ----------------------
 // FIREBASE : CHARGER TOUS LES BLOCS
 // ----------------------
+
+async function loadBlocs() {
+  const list = document.getElementById("bloc-list");
+  list.innerHTML = "";
+
+  const snap = await getDocs(collection(db, "blocs"));
+  const blocs = [];
+  snap.forEach(docSnap => blocs.push(docSnap.data()));
+
+  const activeColors = [...document.querySelectorAll("#filters input:checked")]
+    .map(cb => cb.value);
+
+  const filtered = blocs.filter(b => activeColors.includes(b.grade.color));
+
+  filtered.forEach(b => {
+    const li = document.createElement("li");
+
+    li.innerHTML = `
+      <span class="bloc-name">${b.name}</span>
+      <span class="bloc-grade" style="color:${arkoseColor(b.grade.color)};">
+        ${"▮".repeat(b.grade.bars)}
+      </span>
+    `;
+
+    li.onclick = () => loadBloc(b.name);
+    list.appendChild(li);
+  });
+
+  window.allBlocs = blocs;
+}
+
+// ----------------------
+// FIREBASE : CHARGER UN BLOC
+// ----------------------
+
 async function loadBloc(name) {
   const ref = doc(db, "blocs", name);
   const snap = await getDoc(ref);
