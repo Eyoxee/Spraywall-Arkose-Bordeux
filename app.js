@@ -1356,7 +1356,10 @@ async function saveBloc() {
     alert("Tu dois être connecté pour enregistrer un bloc.");
     return;
   }
-
+  if (currentBloc && currentBlocOwner !== user.uid) {
+    alert("Tu ne peux pas modifier un bloc qui ne t'appartient pas.");
+    return;
+  }
   const bloc = {
     name: document.getElementById("bloc-name").value,
     grade: {
@@ -1427,27 +1430,40 @@ async function loadBloc(name) {
   document.getElementById("bloc-grade-bars").value = bloc.grade.bars;
   document.getElementById("bloc-desc").value = bloc.desc;
 
+  // Charger les états des prises
   holds.forEach(h => {
     const saved = bloc.holds.find(s => s.id === h.id);
     h.state = saved ? saved.state : "none";
   });
 
+  // Affichage des boutons selon propriétaire
   const user = auth.currentUser;
+
   if (user && user.uid === bloc.owner) {
-    const user = auth.currentUser;
+    document.getElementById("save-bloc").style.display = "block";
+    document.getElementById("delete-bloc").style.display = "block";
+  } else {
+    document.getElementById("save-bloc").style.display = "none";
+    document.getElementById("delete-bloc").style.display = "none";
+  }
 
-    if (user && user.uid === bloc.owner) {
-        document.getElementById("save-bloc").style.display = "block";
-        document.getElementById("delete-bloc").style.display = "block";
-    } else {
-        document.getElementById("save-bloc").style.display = "none";
-        document.getElementById("delete-bloc").style.display = "none";
-    }
- 
-
+  // IMPORTANT : toujours re-render les prises
   renderHolds();
 }
 
+ document.getElementById("new-bloc").onclick = () => {
+    holds.forEach(h => h.state = "none");
+    renderHolds();
+
+    currentBloc = null;
+    currentBlocOwner = null;
+
+    document.getElementById("bloc-name").value = "";
+    document.getElementById("bloc-desc").value = "";
+
+    document.getElementById("save-bloc").style.display = "block";
+    document.getElementById("delete-bloc").style.display = "none";
+};
 // ----------------------
 // FIREBASE : SUPPRIMER
 // ----------------------
