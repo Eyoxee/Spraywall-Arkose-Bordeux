@@ -26,7 +26,7 @@ const provider = new GoogleAuthProvider();
 
 const googleBtn = document.getElementById("auth-google");
 
-googleLogin.onclick = async () => {
+googleBtn.onclick = async () => {
   try {
     const provider = new GoogleAuthProvider();
     const cred = await signInWithPopup(auth, provider);
