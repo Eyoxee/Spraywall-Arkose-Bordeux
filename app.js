@@ -1541,7 +1541,7 @@ async function deleteBloc() {
   await loadBlocs();
 }
 
-
+document.getElementById("delete-bloc").onclick = deleteBloc;
 // ----------------------
 // INITIALISATION
 // ----------------------
