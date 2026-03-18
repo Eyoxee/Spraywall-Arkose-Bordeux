@@ -26,13 +26,28 @@ const provider = new GoogleAuthProvider();
 
 const googleBtn = document.getElementById("auth-google");
 
-googleBtn.onclick = async () => {
-    try {
-        await signInWithPopup(auth, provider);
-        // ou signInWithRedirect(auth, provider); si tu préfères
-    } catch (e) {
-        authStatus.textContent = e.message;
+googleLogin.onclick = async () => {
+  try {
+    const provider = new GoogleAuthProvider();
+    const cred = await signInWithPopup(auth, provider);
+    const user = cred.user;
+
+    // Vérifier si le profil existe
+    const ref = doc(db, "users", user.uid);
+    const snap = await getDoc(ref);
+
+    if (!snap.exists()) {
+      // Demander un pseudo
+      const pseudo = prompt("Choisis un pseudo :");
+
+      await setDoc(ref, {
+        pseudo: pseudo || user.displayName || "Anonyme"
+      });
     }
+
+  } catch (e) {
+    authStatus.textContent = e.message;
+  }
 };
 
 const firebaseConfig = {
