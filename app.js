@@ -1458,9 +1458,9 @@ async function loadBloc(name) {
 
   if (user) {
     if (finishers.includes(user.uid)) {
-      document.getElementById("toggle-finish").textContent = "Retirer ma validation";
+      document.getElementById("toggle-finish").textContent = "☒";
     } else {
-      document.getElementById("toggle-finish").textContent = "J’ai fini ce bloc";
+      document.getElementById("toggle-finish").textContent = "☑";
     }
   }
 
