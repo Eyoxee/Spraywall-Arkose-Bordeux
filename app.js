@@ -1351,7 +1351,6 @@ onAuthStateChanged(auth, async user => {
     document.getElementById("bloc-list").innerHTML = "";
     currentBloc = null;
     currentBlocOwner = null;
-    document.getElementById("update-bloc").style.display = "none";
     document.getElementById("delete-bloc").style.display = "none";
   }
 });
