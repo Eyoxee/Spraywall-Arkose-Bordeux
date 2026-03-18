@@ -1383,6 +1383,7 @@ async function saveBloc() {
   await loadBlocs();
 }
 
+document.getElementById("save-bloc").onclick = saveBloc;
 // ----------------------
 // FIREBASE : CHARGER TOUS LES BLOCS
 // ----------------------
