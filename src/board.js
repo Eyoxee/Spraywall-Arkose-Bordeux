@@ -8,7 +8,8 @@ export function createBoardController({
   stateButtons,
   stateSelectorClose,
   holds,
-  holdStateColors
+  holdStateColors,
+  isEditable = () => true
 }) {
   let selectedPoly = null;
 
@@ -50,6 +51,7 @@ export function createBoardController({
   }
 
   function handleHoldClick(e) {
+    if (!isEditable()) return;
     e.stopPropagation();
 
     const elements = document.elementsFromPoint(e.clientX, e.clientY);
@@ -95,6 +97,14 @@ export function createBoardController({
 
   return {
     render,
+    setEditable(nextIsEditable) {
+      isEditable = typeof nextIsEditable === "function" ? nextIsEditable : () => Boolean(nextIsEditable);
+      if (!isEditable()) {
+        selectedPoly = null;
+        closeHoldSelector();
+        closeStateSelector();
+      }
+    },
     closeOverlays() {
       closeHoldSelector();
       closeStateSelector();

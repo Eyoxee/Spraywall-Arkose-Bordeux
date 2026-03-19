@@ -46,6 +46,9 @@ export function createBlocController({
 
     // Delete stays owner-only and only on an existing bloc
     setDeleteVisible(Boolean(user) && viewingExisting && user.uid === currentBlocOwner);
+
+    // Holds should only be editable while creating a new bloc
+    board.setEditable?.(Boolean(user) && creatingNew);
   }
 
   function getActiveColors() {

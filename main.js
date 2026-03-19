@@ -56,7 +56,8 @@ const board = createBoardController({
   stateButtons: dom.stateButtons,
   stateSelectorClose: dom.stateSelectorClose,
   holds,
-  holdStateColors: HOLD_STATE_COLORS
+  holdStateColors: HOLD_STATE_COLORS,
+  isEditable: () => false
 });
 
 const blocs = createBlocController({
