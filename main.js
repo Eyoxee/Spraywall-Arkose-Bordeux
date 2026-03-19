@@ -27,8 +27,13 @@ const dom = getDom();
 function syncSvgToImage() {
   const img = dom.boardImg;
   if (!img?.naturalWidth || !img?.naturalHeight) return;
-  dom.svg.setAttribute("viewBox", `0 0 ${img.naturalWidth} ${img.naturalHeight}`);
-  dom.svg.setAttribute("preserveAspectRatio", "none");
+
+  // Holds coordinates were created against a 900px-wide reference.
+  // Keep that coordinate space and derive the height from the image aspect ratio.
+  const baseWidth = 900;
+  const baseHeight = (baseWidth * img.naturalHeight) / img.naturalWidth;
+  dom.svg.setAttribute("viewBox", `0 0 ${baseWidth} ${baseHeight}`);
+  dom.svg.setAttribute("preserveAspectRatio", "xMinYMin meet");
 }
 
 if (dom.boardImg.complete) {
