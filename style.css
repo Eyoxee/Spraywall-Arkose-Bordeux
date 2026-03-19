@@ -1,23 +1,72 @@
+* {
+    box-sizing: border-box;
+}
+
 body {
-    font-family: Arial, sans-serif;
+    font-family: system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
     background: #f2f2f2;
+    color: #444;
     margin: 0;
     padding: 0;
+    line-height: 1.4;
+}
+
+#account-bar {
+    padding: 12px 16px;
+    background: white;
+    border-bottom: 1px solid #ddd;
+}
+
+.account-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.account-title {
+    font-weight: 700;
+}
+
+.account-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+#auth-status {
+    margin: 8px 0 0;
+    color: #444;
 }
 
 #app {
     display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+    padding: 16px;
+}
+
+#main-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
 }
 
 #board-container {
     position: relative;
+    flex: 1 1 auto;
+    width: min(900px, 100%);
 }
 
 #board-img {
-    width: 900px;
+    width: 100%;
     height: auto;
     display: block;
     pointer-events: none; /* ← indispensable */
+    border-radius: 10px;
 }
 
 #bloc-list li {
@@ -26,6 +75,10 @@ body {
     padding: 6px 10px;
     border-bottom: 1px solid #ddd;
     font-size: 16px;
+}
+
+#bloc-list li:hover {
+    background: #f2f2f2;
 }
 
 .bloc-grade {
@@ -37,7 +90,7 @@ body {
     position: absolute;
     top: 0;
     left: 0;
-    width: 900px;
+    width: 100%;
     height: 100%;
     z-index: 10; /* ← indispensable */
 }
@@ -48,6 +101,7 @@ polygon {
     stroke-width: 3px;
     pointer-events: all; /* ← indispensable pour capter les clics */
     cursor: pointer;     /* ← le curseur DOIT apparaître maintenant */
+    vector-effect: non-scaling-stroke;
 }
 
 #sidebar {
@@ -55,10 +109,79 @@ polygon {
     background: white;
     padding: 20px;
     border-left: 2px solid #ccc;
+    border-radius: 10px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    max-height: calc(100vh - 32px);
+    overflow: auto;
 }
 
-#hold-selector,
-#state-selector {
+#blocs-panel {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+}
+
+#blocs-panel h2 {
+    margin: 0 0 12px;
+    font-size: 18px;
+}
+
+#sidebar h2 {
+    margin: 0 0 12px;
+    font-size: 18px;
+}
+
+#sidebar label {
+    display: block;
+    margin: 10px 0;
+}
+
+#sidebar input,
+#sidebar select,
+#sidebar textarea {
+    width: 100%;
+    margin-top: 6px;
+    padding: 10px 12px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    background: white;
+    font: inherit;
+}
+
+#sidebar textarea {
+    min-height: 80px;
+    resize: vertical;
+}
+
+button {
+    font: inherit;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    background: white;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #f2f2f2;
+}
+
+button:disabled {
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+#sidebar button {
+    width: 100%;
+    margin-top: 10px;
+}
+
+#toggle-finish {
+    width: auto;
+}
+
+#hold-selector {
     position: fixed;
     top: 50%;
     left: 50%;
@@ -68,6 +191,84 @@ polygon {
     border-radius: 10px;
     z-index: 9999; /* Passe au-dessus du SVG */
     box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+}
+
+.modal {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    z-index: 10000;
+}
+
+.modal.hidden {
+    display: none;
+}
+
+.modal::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.3);
+}
+
+.modal-content {
+    position: relative;
+    width: min(420px, 100%);
+    background: white;
+    border-radius: 10px;
+    padding: 16px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+}
+
+.modal-content h3 {
+    margin: 0 0 12px;
+    font-size: 18px;
+}
+
+.modal-content label {
+    display: block;
+    margin: 10px 0;
+}
+
+.modal-content input {
+    width: 100%;
+    margin-top: 6px;
+    padding: 10px 12px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font: inherit;
+}
+
+.modal-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    margin-top: 12px;
+}
+
+.modal-actions button {
+    width: auto;
+}
+
+#selector-list {
+    list-style: none;
+    padding: 0;
+    margin: 12px 0;
+}
+
+#selector-list li {
+    padding: 8px 10px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    cursor: pointer;
+}
+
+#selector-list li:hover {
+    background: #f2f2f2;
 }
 
 .hidden {
@@ -82,6 +283,8 @@ polygon {
     padding: 15px;
     border: 2px solid #444;
     border-radius: 8px;
+    z-index: 9999;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
 }
 
 #state-selector.hidden {
@@ -93,3 +296,46 @@ polygon {
 #state-buttons button {
     margin: 5px;
 }
+
+#filters {
+    margin: 10px 0;
+    padding: 10px 0;
+    border-top: 1px solid #ddd;
+    border-bottom: 1px solid #ddd;
+}
+
+#filters label {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin: 6px 10px 6px 0;
+}
+
+#filters input[type="checkbox"] {
+    width: auto;
+    margin: 0;
+}
+
+#bloc-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+@media (max-width: 900px) {
+    #main-row {
+        flex-direction: column;
+    }
+
+    #board-container {
+        width: 100%;
+    }
+
+    #sidebar {
+        width: 100%;
+        max-height: none;
+        border-left: 0;
+        border-top: 2px solid #ccc;
+    }
+}
+
