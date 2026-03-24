@@ -1,8 +1,8 @@
 export const HOLD_STATE_COLORS = {
   none: "transparent",
-  foot: "blue",
-  hand: "green",
-  start: "yellow",
+  foot: "yellow",
+  hand: "blue",
+  start: "green",
   finish: "red"
 };
 
